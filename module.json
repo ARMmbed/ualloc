@@ -1,0 +1,34 @@
+{
+  "name": "mbed-alloc",
+  "version": "0.0.0",
+  "description": "mbed memory allocation library",
+  "keywords": [],
+  "author": "Brendan Moran <brendan.moran@arm.com>",
+  "repository": {
+    "url": "git@github.com:ARMmbed/mbed-alloc.git",
+    "type": "git"
+  },
+  "homepage": "https://github.com/ARMmbed/mbed-alloc",
+  "licenses": [
+    {
+      "url": "https://spdx.org/licenses/Apache-2.0",
+      "type": "Apache-2.0"
+    }
+  ],
+  "testDependencies":{
+      "mbed" : "~3.0.3"
+  },
+  "dependencies": {
+      "cmsis-core" : "~0.2.0"
+  },
+  "targetDependencies": {},
+  "scripts": {
+    "testReporter": [
+      "mbedgt",
+      "--digest",
+      "stdin",
+      "-v",
+      "-V"
+    ]
+  }
+}
