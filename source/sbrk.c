@@ -1,40 +1,26 @@
 #include <stdint.h>
 #include <stddef.h>
+#include <unistd.h>
 #include "cmsis.h"
-
-#ifndef SBRK_ALIGN
-#define SBRK_ALIGN 4U
-#endif
-#if (SBRK_ALIGN & (SBRK_ALIGN-1))
-#error SBRK_ALIGN must be a power of 2
-#endif
-
-
-#ifndef SBRK_INC_MIN
-#define SBRK_INC_MIN (SBRK_ALIGN)
-#endif
-
-#ifndef KRBS_ALIGN
-#define KRBS_ALIGN 4U
-#endif
-#if (KRBS_ALIGN & (KRBS_ALIGN-1))
-#error KRBS_ALIGN must be a power of 2
-#endif
-
-#ifndef KRBS_INC_MIN
-#define KRBS_INC_MIN (KRBS_ALIGN)
-#endif
-
-extern uint32_t KRBS_START;
-extern uint32_t SBRK_START;
+#include "mbed-alloc/sbrk.h"
 
 volatile void * krbs_ptr = &KRBS_START;
 volatile void * sbrk_ptr = &SBRK_START;
-volatile uintptr_t sbrk_diff = 4096U;
+volatile ptrdiff_t sbrk_diff = HEAP_SIZE;
 
-void * sbrk(const size_t size) {
+caddr_t mbed_sbrk(const ptrdiff_t size);
+
+caddr_t __wrap__sbrk(const ptrdiff_t size) {
+    return mbed_sbrk(size);
+}
+
+caddr_t mbed_sbrk(const ptrdiff_t size)
+{
     uintptr_t sbrk_tmp = NULL;
     size_t size_internal = size;
+    if (size == 0) {
+        return (void *) sbrk_ptr;
+    }
     // Guarantee minimum allocation size
     if (size_internal < SBRK_INC_MIN) {
         size_internal = SBRK_INC_MIN;
@@ -44,7 +30,7 @@ void * sbrk(const size_t size) {
     while(1) {
         uintptr_t ptr_diff = __LDREXW((uint32_t *)&sbrk_diff);
         if (size_internal > ptr_diff) {
-            return NULL;
+            return (void*)-1;
         }
         ptr_diff -= size_internal;
         if (__STREXW(ptr_diff, (uint32_t *)&sbrk_diff))
@@ -68,9 +54,18 @@ void * sbrk(const size_t size) {
     return (void *) sbrk_tmp;
 }
 
-void * krbs(const size_t size) {
+void * krbs(const ptrdiff_t size)
+{
+    return krbs_ex(size, NULL);
+}
+
+void * krbs_ex(const ptrdiff_t size, ptrdiff_t *actual)
+{
     uintptr_t krbs_tmp = NULL;
     size_t size_internal = size;
+    if (size == 0) {
+        return (void *) krbs_ptr;
+    }
     // Guarantee minimum allocation size
     if (size_internal < KRBS_INC_MIN) {
         size_internal = KRBS_INC_MIN;
@@ -79,8 +74,8 @@ void * krbs(const size_t size) {
 
     while(1) {
         uintptr_t ptr_diff = __LDREXW((uint32_t *)&sbrk_diff);
-        if (size_internal > ptr_diff) {
-            return NULL;
+        if (size_internal > ptr_diff && actual == NULL) {
+            return (void*)-1;
         }
         ptr_diff -= size_internal;
         if (__STREXW(ptr_diff, (uint32_t *)&sbrk_diff))

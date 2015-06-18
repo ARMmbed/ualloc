@@ -65,7 +65,7 @@ int main()
 
         // Allocate a big block
         ptr = (uintptr_t) sbrk(sizeof(test_region));
-        if (ptr != (uintptr_t) NULL) {
+        if (ptr != (uintptr_t) -1) {
             break;
         }
         ptr = (uintptr_t) krbs(sizeof(test_region));
