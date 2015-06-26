@@ -18,26 +18,24 @@
 #ifndef __MBED_ALLOC_UALLOC_H
 #define __MBED_ALLOC_UALLOC_H
 
+#include <stdint.h>
+#include <stddef.h>
 typedef struct UAllocTraitsExt UAllocTraitsExt_t;
 
 #define UALLOC_TRAITS_BITMASK        1
-#define UALLOC_TRAITS_NEVER_FREE    (1<<1 | (BITMASK))
-#define UALLOC_TRAITS_ZERO_FILL     (1<<2 | (BITMASK))
-#define UALLOC_TRAITS_NON_RETAINED  (1<<3 | (BITMASK))
-#define UALLOC_TRAITS_ON_CHIP       (1<<4 | (BITMASK))
-#define UALLOC_TRAITS_ALIGN_4       (0<<5 | (BITMASK))
-#define UALLOC_TRAITS_ALIGN_8       (1<<5 | (BITMASK))
-#define UALLOC_TRAITS_ALIGN_16      (2<<5 | (BITMASK))
-#define UALLOC_TRAITS_ALIGN_32      (3<<5 | (BITMASK))
+#define UALLOC_TRAITS_NEVER_FREE    (1<<1 | (UALLOC_TRAITS_BITMASK))
+#define UALLOC_TRAITS_ZERO_FILL     (1<<2 | (UALLOC_TRAITS_BITMASK))
+#define UALLOC_TRAITS_NON_RETAINED  (1<<3 | (UALLOC_TRAITS_BITMASK))
+#define UALLOC_TRAITS_ON_CHIP       (1<<4 | (UALLOC_TRAITS_BITMASK))
+#define UALLOC_TRAITS_ALIGN_4       (0<<5 | (UALLOC_TRAITS_BITMASK))
+#define UALLOC_TRAITS_ALIGN_8       (1<<5 | (UALLOC_TRAITS_BITMASK))
+#define UALLOC_TRAITS_ALIGN_16      (2<<5 | (UALLOC_TRAITS_BITMASK))
+#define UALLOC_TRAITS_ALIGN_32      (3<<5 | (UALLOC_TRAITS_BITMASK))
 
 typedef union UAllocTraits {
     uint32_t flags;
     UAllocTraitsExt_t *extended;
 } UAllocTraits_t;
-
-#if sizeof(UAllocTraits_t) > sizeof(uintptr_t)
-#error UAllocTraits must be no larger than a uintptr_t
-#endif
 
 void * ualloc(size_t bytes, UAllocTraits_t);
 void * urealloc(void * ptr, size_t bytes, UAllocTraits_t);
