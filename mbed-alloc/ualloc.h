@@ -18,15 +18,16 @@
 #ifndef __MBED_ALLOC_UALLOC_H
 #define __MBED_ALLOC_UALLOC_H
 
-typedef struct uAllocTraitsExt UAllocTraitsExt_t;
+typedef struct UAllocTraitsExt UAllocTraitsExt_t;
 
-typedef union uAllocTraits {
+typedef union UAllocTraits {
     struct {
-        unsigned unused:26;
+        unsigned unused:25;
         unsigned align:2; // 4, 8, 16, or 32-byte alignment
-        unsigned onChip:1;
-        unsigned nonRetained:1;
-        unsigned neverFree:1;
+        unsigned onchip:1;
+        unsigned non_retained:1;
+        unsigned zero_fill:1;
+        unsigned never_free:1;
         unsigned reserved:1;
     } flags;
     UAllocTraitsExt_t *extended;
@@ -36,7 +37,8 @@ typedef union uAllocTraits {
 #error UAllocTraits must be no larger than a uintptr_t
 #endif
 
-void * uAlloc(size_t bytes, UAllocTraits_t);
-void uFree(void * ptr);
+void * ualloc(size_t bytes, UAllocTraits_t);
+void * urealloc(void * ptr, size_t bytes, UAllocTraits_t);
+void ufree(void * ptr);
 
 #endif // __MBED_ALLOC_UALLOC_H
