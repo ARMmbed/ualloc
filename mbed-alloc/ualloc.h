@@ -20,16 +20,18 @@
 
 typedef struct UAllocTraitsExt UAllocTraitsExt_t;
 
+#define UALLOC_TRAITS_BITMASK        1
+#define UALLOC_TRAITS_NEVER_FREE    (1<<1 | (BITMASK))
+#define UALLOC_TRAITS_ZERO_FILL     (1<<2 | (BITMASK))
+#define UALLOC_TRAITS_NON_RETAINED  (1<<3 | (BITMASK))
+#define UALLOC_TRAITS_ON_CHIP       (1<<4 | (BITMASK))
+#define UALLOC_TRAITS_ALIGN_4       (0<<5 | (BITMASK))
+#define UALLOC_TRAITS_ALIGN_8       (1<<5 | (BITMASK))
+#define UALLOC_TRAITS_ALIGN_16      (2<<5 | (BITMASK))
+#define UALLOC_TRAITS_ALIGN_32      (3<<5 | (BITMASK))
+
 typedef union UAllocTraits {
-    struct {
-        unsigned unused:25;
-        unsigned align:2; // 4, 8, 16, or 32-byte alignment
-        unsigned onchip:1;
-        unsigned non_retained:1;
-        unsigned zero_fill:1;
-        unsigned never_free:1;
-        unsigned reserved:1;
-    } flags;
+    uint32_t flags;
     UAllocTraitsExt_t *extended;
 } UAllocTraits_t;
 
