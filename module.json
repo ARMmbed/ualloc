@@ -19,6 +19,10 @@
       "type": "Apache-2.0"
     }
   ],
-  "dependencies": {},
+  "dependencies": {
+      "dlmalloc" : "~0.0.0",
+      "mbed":"*",
+      "cmsis-core":"*" 
+  },
   "targetDependencies": {}
 }

@@ -32,6 +32,16 @@ typedef struct UAllocTraitsExt UAllocTraitsExt_t;
 #define UALLOC_TRAITS_ALIGN_16      (2<<5 | (UALLOC_TRAITS_BITMASK))
 #define UALLOC_TRAITS_ALIGN_32      (3<<5 | (UALLOC_TRAITS_BITMASK))
 
+typedef enum {
+    UALLOC_DEBUG_NONE = 0,
+    UALLOC_DEBUG_FATAL,
+    UALLOC_DEBUG_ERROR,
+    UALLOC_DEBUG_WARNING,
+    UALLOC_DEBUG_INFO,
+    UALLOC_DEBUG_LOG,
+    UALLOC_DEBUG_MAX
+} UAllocDebug_t;
+
 typedef union UAllocTraits {
     uint32_t flags;
     UAllocTraitsExt_t *extended;
