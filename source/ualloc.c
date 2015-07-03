@@ -10,6 +10,8 @@ extern void* dlrealloc(void*, size_t);
 
 extern int printf(const char *, ...);
 
+extern void * volatile mbed_sbrk_ptr;
+
 // Set debug level to 0 until non-allocating printf is available
 const UAllocDebug_t ualloc_debug_level = UALLOC_DEBUG_NONE;//(DEBUG?UALLOC_DEBUG_MAX:UALLOC_DEBUG_NONE);
 
@@ -64,7 +66,14 @@ void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits)
         // Traits not supported in urealloc yet
         ualloc_debug(UALLOC_DEBUG_WARNING, "ua c:%p fail\n", caller);
     }
-    newptr = dlrealloc(ptr, bytes);
+    uintptr_t ptr_tmp = (uintptr_t) ptr;
+    if ((ptr_tmp < (uintptr_t) mbed_sbrk_ptr) &&
+            (ptr_tmp >= (uintptr_t)&__mbed_sbrk_start)) {
+        newptr = dlrealloc(ptr, bytes);
+    } else {
+        ualloc_debug(UALLOC_DEBUG_LOG, "uf c:%p m:%p non-heap realloc\n", caller, ptr);
+    }
+
     if(newptr == NULL) {
         ualloc_debug(UALLOC_DEBUG_WARNING, "ur c:%p m0:%p fail\n", caller, ptr);
     } else {
@@ -72,7 +81,6 @@ void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits)
     }
     return newptr;
 }
-extern void * volatile mbed_sbrk_ptr;
 void mbed_ufree(void * ptr)
 {
     void * caller = (void*) caller_addr();
