@@ -18,7 +18,7 @@
 # toolchain being used
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL GNU)
-    set(LINK_OVERRIDE_FLAGS "-Wl,-wrap,_malloc_r -Wl,-wrap,_calloc_r -Wl,-wrap,_realloc_r -Wl,-wrap,_free_r")
+    set(LINK_OVERRIDE_FLAGS "-Wl,-wrap,_malloc_r -Wl,-wrap,_calloc_r -Wl,-wrap,_realloc_r -Wl,-wrap,_free_r -Wl,-wrap,_sbrk_r")
 elseif(${CMAKE_C_COMPILER_ID} STREQUAL ARMCC)
     set(LINK_OVERRIDE_FLAGS "--undefined=ualloc --undefined=malloc_c_force_import")
 else()

@@ -36,7 +36,7 @@ void * mbed_ualloc(size_t bytes, UAllocTraits_t traits)
     void * ptr = NULL;
     void * caller = (void*) caller_addr();
     if (UALLOC_TEST_TRAITS(traits.flags, UALLOC_TRAITS_NEVER_FREE)) {
-        ptr = krbs(bytes);
+        ptr = mbed_krbs(bytes);
         if ((ptr != NULL) && UALLOC_TEST_TRAITS(traits.flags, UALLOC_TRAITS_ZERO_FILL)) {
             memset(ptr, 0, bytes);
         }
@@ -72,9 +72,16 @@ void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits)
     }
     return newptr;
 }
+extern void * volatile mbed_sbrk_ptr;
 void mbed_ufree(void * ptr)
 {
     void * caller = (void*) caller_addr();
     ualloc_debug(UALLOC_DEBUG_LOG, "uf c:%p m:%p\n", caller, ptr);
-    dlfree(ptr);
+    uintptr_t ptr_tmp = (uintptr_t) ptr;
+    if ((ptr_tmp < (uintptr_t) mbed_sbrk_ptr) &&
+            (ptr_tmp >= (uintptr_t)&__mbed_sbrk_start)) {
+        dlfree(ptr);
+    } else {
+        ualloc_debug(UALLOC_DEBUG_LOG, "uf c:%p m:%p non-heap free\n", caller, ptr);
+    }
 }

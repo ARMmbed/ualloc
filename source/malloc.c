@@ -1,4 +1,5 @@
 #include "mbed-alloc/ualloc.h"
+#include "mbed/sbrk.h"
 #include <stdlib.h>
 
 #if defined(__ARMCC_VERSION)
@@ -38,5 +39,8 @@ void __wrap__free_r(struct _reent *r, void * ptr) {
     (void)r;
     mbed_ufree(ptr);
 }
-
+void * __wrap__sbrk_r(struct _reent *r, ptrdiff_t size) {
+    (void) r;
+    return mbed_sbrk(size);
+}
 #endif
