@@ -25,12 +25,11 @@ typedef struct UAllocTraitsExt UAllocTraitsExt_t;
 #define UALLOC_TRAITS_BITMASK        1
 #define UALLOC_TRAITS_NEVER_FREE    (1<<1 | (UALLOC_TRAITS_BITMASK))
 #define UALLOC_TRAITS_ZERO_FILL     (1<<2 | (UALLOC_TRAITS_BITMASK))
-#define UALLOC_TRAITS_NON_RETAINED  (1<<3 | (UALLOC_TRAITS_BITMASK))
-#define UALLOC_TRAITS_ON_CHIP       (1<<4 | (UALLOC_TRAITS_BITMASK))
-#define UALLOC_TRAITS_ALIGN_4       (0<<5 | (UALLOC_TRAITS_BITMASK))
-#define UALLOC_TRAITS_ALIGN_8       (1<<5 | (UALLOC_TRAITS_BITMASK))
-#define UALLOC_TRAITS_ALIGN_16      (2<<5 | (UALLOC_TRAITS_BITMASK))
-#define UALLOC_TRAITS_ALIGN_32      (3<<5 | (UALLOC_TRAITS_BITMASK))
+
+#define UALLOC_RESERVED_MASK        ((~0UL) ^ (UALLOC_TRAITS_NEVER_FREE | UALLOC_TRAITS_ZERO_FILL))
+
+#define UALLOC_TEST_TRAITS(x,T)\
+    (!( (T) ^ ( (T) & (x) ) ))
 
 typedef enum {
     UALLOC_DEBUG_NONE = 0,
@@ -47,8 +46,8 @@ typedef union UAllocTraits {
     UAllocTraitsExt_t *extended;
 } UAllocTraits_t;
 
-void * ualloc(size_t bytes, UAllocTraits_t);
-void * urealloc(void * ptr, size_t bytes, UAllocTraits_t);
-void ufree(void * ptr);
+void * mbed_ualloc(size_t bytes, UAllocTraits_t);
+void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t);
+void mbed_ufree(void * ptr);
 
 #endif // __MBED_ALLOC_UALLOC_H

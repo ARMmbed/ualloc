@@ -1,6 +1,7 @@
 #include "mbed-alloc/ualloc.h"
 #include "mbed/sbrk.h"
 #include "cmsis.h"
+#include "string.h"
 
 extern void* dlmalloc(size_t);
 extern void  dlfree(void*);
@@ -8,11 +9,6 @@ extern void* dlcalloc(size_t, size_t);
 extern void* dlrealloc(void*, size_t);
 
 extern int printf(const char *, ...);
-
-#ifndef DEBUG
-#define DEBUG 1
-#endif
-
 
 // Set debug level to 0 until non-allocating printf is available
 const UAllocDebug_t ualloc_debug_level = UALLOC_DEBUG_NONE;//(DEBUG?UALLOC_DEBUG_MAX:UALLOC_DEBUG_NONE);
@@ -35,51 +31,50 @@ const char ua_chars[] = "NFEWIL";
     #define caller_addr() (NULL)
 #endif
 
-void * ualloc(size_t bytes, UAllocTraits_t traits)
+void * mbed_ualloc(size_t bytes, UAllocTraits_t traits)
 {
     void * ptr = NULL;
     void * caller = (void*) caller_addr();
-    if (traits.flags == UALLOC_TRAITS_NEVER_FREE) {
+    if (UALLOC_TEST_TRAITS(traits.flags, UALLOC_TRAITS_NEVER_FREE)) {
         ptr = krbs(bytes);
-    } else if (traits.flags == UALLOC_TRAITS_ZERO_FILL) {
+        if ((ptr != NULL) && UALLOC_TEST_TRAITS(traits.flags, UALLOC_TRAITS_ZERO_FILL)) {
+            memset(ptr, 0, bytes);
+        }
+    } else if (UALLOC_TEST_TRAITS(traits.flags, UALLOC_TRAITS_ZERO_FILL)) {
         ptr = dlcalloc(1, bytes);
     } else if (!(traits.flags & ~UALLOC_TRAITS_BITMASK)) {
         ptr = dlmalloc(bytes);
+    } else if (traits.flags & UALLOC_RESERVED_MASK) {
+        ualloc_debug(UALLOC_DEBUG_ERROR, "ua c:%p reserved: %lx\n", caller,
+            traits.flags & UALLOC_RESERVED_MASK);
     }
 
     if(ptr == NULL) {
-        ualloc_debug(UALLOC_DEBUG_ERROR, "ua c:%p fail\n", caller);
-        __BKPT(0);
+        ualloc_debug(UALLOC_DEBUG_WARNING, "ua c:%p fail\n", caller);
     } else {
         ualloc_debug(UALLOC_DEBUG_LOG, "ua c:%p m:%p\n", caller, ptr);
     }
     return ptr;
 }
-void * urealloc(void * ptr, size_t bytes, UAllocTraits_t traits)
+void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits)
 {
     void * caller = (void*) caller_addr();
     void *newptr;
     if(traits.flags & ~UALLOC_TRAITS_BITMASK) {
-        ualloc_debug(UALLOC_DEBUG_ERROR, "ua c:%p fail\n", caller);
         // Traits not supported in urealloc yet
-        __BKPT(0);
+        ualloc_debug(UALLOC_DEBUG_WARNING, "ua c:%p fail\n", caller);
     }
     newptr = dlrealloc(ptr, bytes);
     if(newptr == NULL) {
-        ualloc_debug(UALLOC_DEBUG_ERROR, "ur c:%p m0:%p fail\n", caller, ptr);
-        __BKPT(0);
+        ualloc_debug(UALLOC_DEBUG_WARNING, "ur c:%p m0:%p fail\n", caller, ptr);
     } else {
         ualloc_debug(UALLOC_DEBUG_LOG, "ur c:%p m0:%p m1:%p\n", caller, ptr, newptr);
     }
     return newptr;
 }
-void ufree(void * ptr)
+void mbed_ufree(void * ptr)
 {
     void * caller = (void*) caller_addr();
-    if(ptr == NULL) {
-        __BKPT(0);
-    } else {
-        ualloc_debug(UALLOC_DEBUG_LOG, "uf c:%p m:%p\n", caller, ptr);
-    }
+    ualloc_debug(UALLOC_DEBUG_LOG, "uf c:%p m:%p\n", caller, ptr);
     dlfree(ptr);
 }
