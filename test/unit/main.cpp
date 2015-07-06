@@ -14,8 +14,8 @@ extern volatile uintptr_t mbed_sbrk_diff;
 int main(void) {
     MBED_HOSTTEST_TIMEOUT(10);
     MBED_HOSTTEST_SELECT(default);
-    MBED_HOSTTEST_DESCRIPTION(ualloc unit test);
-    MBED_HOSTTEST_START("UALLOC_UNIT");
+    MBED_HOSTTEST_DESCRIPTION(ualloc zone test);
+    MBED_HOSTTEST_START("UALLOC_ZONE");
     const char * current_test = "none";
     UAllocTraits_t traits;
 
