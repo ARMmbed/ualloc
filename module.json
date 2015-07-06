@@ -1,6 +1,6 @@
 {
   "name": "mbed-alloc",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "mbed allocator api",
   "keywords": [
     "ualloc",
@@ -20,9 +20,21 @@
     }
   ],
   "dependencies": {
-      "dlmalloc" : "~0.0.0",
-      "mbed":"*",
-      "cmsis-core":"*" 
+    "dlmalloc": "~0.0.0",
+    "mbed": "*",
+    "cmsis-core": "*"
   },
-  "targetDependencies": {}
+  "testDependencies": {
+      "mbed-core" : "~0.1.1"
+  },
+  "targetDependencies": {},
+  "scripts": {
+    "testReporter": [
+      "mbedgt",
+      "--digest",
+      "stdin",
+      "-v",
+      "-V"
+    ]
+  }
 }
