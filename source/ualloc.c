@@ -65,6 +65,7 @@ void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits)
     if(traits.flags & ~UALLOC_TRAITS_BITMASK) {
         // Traits not supported in urealloc yet
         ualloc_debug(UALLOC_DEBUG_WARNING, "ua c:%p fail\n", caller);
+        return NULL;
     }
     uintptr_t ptr_tmp = (uintptr_t) ptr;
     if ((ptr_tmp < (uintptr_t) mbed_sbrk_ptr) &&

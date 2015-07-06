@@ -149,8 +149,6 @@ int main(void) {
             ok = ((uint32_t *)ptr)[i] == 0;
         }
         if (!ok) {break;}
-        mbed_ufree(ptr);
-
 
         current_test = "urealloc";
         traits.flags = 0;
@@ -166,6 +164,36 @@ int main(void) {
         // free
         mbed_ufree(ptr1);
         mbed_ufree(ptr2);
+
+        // Test failing allocations
+        // try to realloc a never-free pointer
+        current_test = "urealloc/never-free";
+        // Allocate the memory
+        traits.flags = UALLOC_TRAITS_ZERO_FILL | UALLOC_TRAITS_NEVER_FREE;
+        void * nfptr = mbed_ualloc(TEST_SIZE_0, traits);
+        if (nfptr == NULL) {break;}
+        traits.flags = 0;
+        ptr = mbed_urealloc(nfptr, 2 * TEST_SIZE_0, traits);
+        if (ptr != NULL) {break;}
+
+        // try to allocate with reserved flags
+        current_test = "ualloc/reserved flags";
+        traits.flags = UALLOC_RESERVED_MASK | UALLOC_TRAITS_BITMASK;
+        ptr = mbed_ualloc(TEST_SIZE_0, traits);
+        if (ptr != NULL) {break;}
+
+        // try urealloc with any flags
+        current_test = "urealloc/flags";
+        traits.flags = 0;
+        // malloc two blocks
+        ptr0 = mbed_ualloc(TEST_SIZE_0, traits);
+
+        traits.flags = UALLOC_TRAITS_NEVER_FREE;
+        ptr2 = mbed_urealloc(ptr0, 2 * TEST_SIZE_0, traits);
+        if (ptr2 != NULL) {break;}
+        // free
+        mbed_ufree(ptr0);
+
 
         tests_pass = true;
     } while (0);
