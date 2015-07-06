@@ -24,5 +24,17 @@
     "mbed": "*",
     "cmsis-core": "*"
   },
-  "targetDependencies": {}
+  "testDependencies": {
+      "mbed-core" : "~0.1.1"
+  },
+  "targetDependencies": {},
+  "scripts": {
+    "testReporter": [
+      "mbedgt",
+      "--digest",
+      "stdin",
+      "-v",
+      "-V"
+    ]
+  }
 }

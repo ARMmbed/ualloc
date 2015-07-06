@@ -31,6 +31,9 @@ typedef struct UAllocTraitsExt UAllocTraitsExt_t;
 #define UALLOC_TEST_TRAITS(x,T)\
     (!( (T) ^ ( (T) & (x) ) ))
 
+#ifdef __cplusplus
+extern "C"{
+#endif
 typedef enum {
     UALLOC_DEBUG_NONE = 0,
     UALLOC_DEBUG_FATAL,
@@ -49,5 +52,9 @@ typedef union UAllocTraits {
 void * mbed_ualloc(size_t bytes, UAllocTraits_t);
 void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t);
 void mbed_ufree(void * ptr);
+
+#ifdef __cplusplus
+};
+#endif
 
 #endif // __MBED_ALLOC_UALLOC_H
