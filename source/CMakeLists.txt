@@ -27,4 +27,4 @@ else()
 endif()
 
 add_library(ualloc malloc.c ualloc.c)
-target_link_libraries(mbed-alloc dlmalloc ${LINK_OVERRIDE_FLAGS})
+target_link_libraries(ualloc dlmalloc ${LINK_OVERRIDE_FLAGS})
