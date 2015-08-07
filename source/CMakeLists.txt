@@ -26,5 +26,5 @@ else()
     message(FATAL_ERROR "Unsupported target toolchain (gcc supported)")
 endif()
 
-add_library(mbed-alloc malloc.c ualloc.c)
+add_library(ualloc malloc.c ualloc.c)
 target_link_libraries(mbed-alloc dlmalloc ${LINK_OVERRIDE_FLAGS})
