@@ -1,5 +1,5 @@
 {
-  "name": "mbed-alloc",
+  "name": "ualloc",
   "version": "0.0.5",
   "description": "mbed allocator api",
   "keywords": [
@@ -21,7 +21,7 @@
   ],
   "dependencies": {
     "dlmalloc": "~0.0.0",
-    "mbed-core": ">=0.1.1",
+    "mbed-drivers": ">=0.1.1",
     "cmsis-core": "*"
   },
   "targetDependencies": {},
