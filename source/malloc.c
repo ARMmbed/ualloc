@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 #include "mbed-alloc/ualloc.h"
-#include "mbed/sbrk.h"
 #include <stdlib.h>
 
 #if defined(__ARMCC_VERSION)

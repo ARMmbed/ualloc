@@ -16,7 +16,6 @@
  */
 #include "mbed-alloc/ualloc.h"
 #include "mbed/sbrk.h"
-#include "cmsis.h"
 #include "string.h"
 
 extern void* dlmalloc(size_t);
