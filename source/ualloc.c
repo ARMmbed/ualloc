@@ -32,12 +32,11 @@ const UAllocDebug_t ualloc_debug_level = UALLOC_DEBUG_NONE;//(DEBUG?UALLOC_DEBUG
 
 const char ua_chars[] = "NFEWIL";
 
-#define ualloc_debug(ADBG_LEVEL, fmt, ...)\
-    do {\
-        if (ADBG_LEVEL <= ualloc_debug_level && ADBG_LEVEL < UALLOC_DEBUG_MAX) {\
-            printf("UAL:%c " fmt, ua_chars[ADBG_LEVEL], __VA_ARGS__);\
-        }\
-    } while (0)
+#define ualloc_debug(ADBG_LEVEL, fmt, ...) do {                              \
+    if (ADBG_LEVEL <= ualloc_debug_level && ADBG_LEVEL < UALLOC_DEBUG_MAX) { \
+        printf("UAL:%c " fmt, ua_chars[ADBG_LEVEL], __VA_ARGS__);            \
+    }                                                                        \
+} while (0)
 
 
 #if defined(__ARMCC_VERSION)
