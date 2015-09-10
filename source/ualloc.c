@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 #include "mbed-alloc/ualloc.h"
-#include "mbed/sbrk.h"
+#include "mbed-util/sbrk.h"
 #include "string.h"
 
 extern void* dlmalloc(size_t);

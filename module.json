@@ -20,7 +20,8 @@
     }
   ],
   "dependencies": {
-    "dlmalloc": "~0.0.0"
+    "dlmalloc": "~0.0.0",
+    "core-util": "*"
   },
   "targetDependencies": {
     "mbed" : {
