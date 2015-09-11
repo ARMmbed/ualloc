@@ -17,7 +17,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "mbed/test_env.h"
-#include "mbed/sbrk.h"
+#include "mbed-util/sbrk.h"
 #include "mbed-alloc/ualloc.h"
 
 
@@ -27,7 +27,7 @@ extern volatile uintptr_t mbed_sbrk_diff;
 
 #define TEST_SIZE_0 0x20
 
-int main(void) {
+void app_start(int, char**) {
     MBED_HOSTTEST_TIMEOUT(10);
     MBED_HOSTTEST_SELECT(default);
     MBED_HOSTTEST_DESCRIPTION(ualloc zone test);
@@ -219,5 +219,4 @@ int main(void) {
     }
 
     MBED_HOSTTEST_RESULT(tests_pass);
-    return !tests_pass;
 }
