@@ -21,10 +21,14 @@
   ],
   "dependencies": {
     "dlmalloc": "~0.0.0",
-    "mbed-drivers": ">=0.1.1",
-    "cmsis-core": "*"
+    "core-util": "*"
   },
-  "targetDependencies": {},
+  "targetDependencies": {
+    "mbed" : {
+      "mbed-drivers": ">=0.1.1",
+      "cmsis-core": "*"
+    }
+  },
   "scripts": {
     "testReporter": [
       "mbedgt",
