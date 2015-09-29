@@ -17,7 +17,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "mbed/test_env.h"
-#include "mbed-util/sbrk.h"
+#include "core-util/sbrk.h"
 #include "mbed-alloc/ualloc.h"
 
 
