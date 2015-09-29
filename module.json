@@ -21,7 +21,7 @@
   ],
   "dependencies": {
     "dlmalloc": "~0.0.0",
-    "core-util": ">=0.1.0"
+    "core-util": "~0.2.0"
   },
   "scripts": {
     "testReporter": [
