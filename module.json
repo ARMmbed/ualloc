@@ -5,7 +5,9 @@
   "keywords": [
     "ualloc",
     "alloc",
-    "malloc"
+    "malloc",
+    "mbed",
+    "mbed-official"
   ],
   "author": "Brendan Moran <brendan.moran@arm.com>",
   "repository": {
@@ -20,8 +22,8 @@
     }
   ],
   "dependencies": {
-    "dlmalloc": "~0.0.0",
-    "core-util": ">=0.1.0"
+    "dlmalloc": "^1.0.0",
+    "core-util": "^1.0.0"
   },
   "scripts": {
     "testReporter": [
