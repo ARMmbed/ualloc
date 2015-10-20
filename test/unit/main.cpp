@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include "mbed/test_env.h"
 #include "core-util/sbrk.h"
-#include "mbed-alloc/ualloc.h"
+#include "ualloc/ualloc.h"
 
 
 extern void * volatile mbed_sbrk_ptr;
