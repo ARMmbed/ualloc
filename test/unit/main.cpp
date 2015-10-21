@@ -16,7 +16,7 @@
  */
 #include <stddef.h>
 #include <stdint.h>
-#include "mbed/test_env.h"
+#include "mbed-drivers/test_env.h"
 #include "core-util/sbrk.h"
 #include "ualloc/ualloc.h"
 
