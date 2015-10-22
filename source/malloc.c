@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "mbed-alloc/ualloc.h"
+#include "ualloc/ualloc.h"
 #include "core-util/sbrk.h"
 #include <stdlib.h>
 
