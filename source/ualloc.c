@@ -76,6 +76,9 @@ void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits)
 {
     void * caller = (void*) caller_addr();
     void *newptr = NULL;
+    if (ptr == NULL) {
+        return mbed_ualloc(bytes, traits);
+    }
     if(traits.flags & ~UALLOC_TRAITS_BITMASK) {
         // Traits not supported in urealloc yet
         ualloc_debug(UALLOC_DEBUG_WARNING, "ua c:%p fail\n", caller);
