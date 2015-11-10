@@ -17,13 +17,13 @@
 # this custom build file pulls in different linker commands based on the
 # toolchain being used
 
-if(${CMAKE_C_COMPILER_ID} STREQUAL GNU)
+if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang" AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(LINK_OVERRIDE_FLAGS "-Wl,-wrap,_malloc_r -Wl,-wrap,_calloc_r -Wl,-wrap,_realloc_r -Wl,-wrap,_free_r -Wl,-wrap,_sbrk_r")
-elseif(${CMAKE_C_COMPILER_ID} STREQUAL ARMCC)
+elseif(${CMAKE_C_COMPILER_ID} STREQUAL "ARMCC")
     set(LINK_OVERRIDE_FLAGS "--undefined=mbed_ualloc --undefined=malloc_c_force_import")
 else()
     set(LINK_OVERRIDE_FLAGS "")
-    message(FATAL_ERROR "Unsupported target toolchain (gcc supported)")
+    message(FATAL_ERROR "Unsupported target toolchain: ${CMAKE_C_COMPILER_ID} (gcc (with gnu ld) and armcc (with armlink) are supported)")
 endif()
 
 add_library(ualloc malloc.c ualloc.c)
