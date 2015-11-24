@@ -30,6 +30,7 @@ extern void * volatile mbed_sbrk_ptr;
 // Set debug level to 0 until non-allocating printf is available
 const UAllocDebug_t ualloc_debug_level = UALLOC_DEBUG_NONE;//(DEBUG?UALLOC_DEBUG_MAX:UALLOC_DEBUG_NONE);
 
+// Debug characters
 const char ua_chars[] = "NFEWIL";
 
 #define ualloc_debug(ADBG_LEVEL, fmt, ...) do {                              \
@@ -38,7 +39,11 @@ const char ua_chars[] = "NFEWIL";
     }                                                                        \
 } while (0)
 
-
+/**
+ * Helper function that identifies the caller of a function
+ *
+ * @return Address of the calling function
+ */
 #if defined(__ARMCC_VERSION)
     #define caller_addr() __builtin_return_address(0)
 #elif defined(__GNUC__)
@@ -47,12 +52,29 @@ const char ua_chars[] = "NFEWIL";
     #define caller_addr() (NULL)
 #endif
 
+/**
+ * Allocate memory with traits
+ *
+ * ualloc allocates memory with traits. Traits are a way of specifying additional behaviour to the allocator.
+ * Currently, ualloc supports a limited number of traits:
+ * * UALLOC_TRAITS_NEVER_FREE: Allocate memory with krbs, which is interrupt-safe
+ * * UALLOC_TRAITS_ZERO_FILL:  memset the returned memory to 0.
+ * These traits can be used on their own or together.
+ *
+ * @param[in] bytes the number of bytes to allocates
+ * @param[in] traits the traits to apply to the allocated memory
+ * @return a pointer to the allocated memory on success, or NULL on failure.
+ */
 void * mbed_ualloc(size_t bytes, UAllocTraits_t traits)
 {
     void * ptr = NULL;
     void * caller = (void*) caller_addr();
     if (UALLOC_TEST_TRAITS(traits.flags, UALLOC_TRAITS_NEVER_FREE)) {
         ptr = mbed_krbs(bytes);
+        // krbs uses the same semantics as sbrk, so translate a -1 to NULL.
+        if (ptr == -1) {
+            ptr = NULL;
+        }
         if ((ptr != NULL) && UALLOC_TEST_TRAITS(traits.flags, UALLOC_TRAITS_ZERO_FILL)) {
             memset(ptr, 0, bytes);
         }
@@ -72,6 +94,21 @@ void * mbed_ualloc(size_t bytes, UAllocTraits_t traits)
     }
     return ptr;
 }
+/**
+ * Reallocate the supplied memory
+ *
+ * If the supplied pointer is NULL, call ualloc instead
+ * NOTE: If 0 is supplied as the number of bytes, this is passed through to the underlying allocator (dlmalloc) which
+ * will invoke free.
+ *
+ * Traits are not currently supported in urealloc, since the semantics of handling zero-fill and never-free in realloc
+ * are unclear.
+ *
+ * @param[in] ptr the pointer to reallocate
+ * @param[in] bytes the new size for ptr
+ * @param[in] traits the traits to apply to the new region (NOTE: Currently unsupported, must be 0)
+ * @return the reallocated pointer
+ */
 void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits)
 {
     void * caller = (void*) caller_addr();
@@ -99,6 +136,12 @@ void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits)
     }
     return newptr;
 }
+/**
+ * ufree is a passthrough to the underlying free implementation.
+ * ufree calls dlfree.
+ *
+ * @param[in] the pointer to free
+ */
 void mbed_ufree(void * ptr)
 {
     void * caller = (void*) caller_addr();

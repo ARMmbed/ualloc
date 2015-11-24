@@ -54,7 +54,7 @@ void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t);
 void mbed_ufree(void * ptr);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif // __MBED_ALLOC_UALLOC_H
