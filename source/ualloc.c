@@ -72,7 +72,7 @@ void * mbed_ualloc(size_t bytes, UAllocTraits_t traits)
     if (UALLOC_TEST_TRAITS(traits.flags, UALLOC_TRAITS_NEVER_FREE)) {
         ptr = mbed_krbs(bytes);
         // krbs uses the same semantics as sbrk, so translate a -1 to NULL.
-        if (ptr == -1) {
+        if (ptr == (void*)-1) {
             ptr = NULL;
         }
         if ((ptr != NULL) && UALLOC_TEST_TRAITS(traits.flags, UALLOC_TRAITS_ZERO_FILL)) {
