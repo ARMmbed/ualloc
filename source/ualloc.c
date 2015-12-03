@@ -30,6 +30,7 @@ extern void * volatile mbed_sbrk_ptr;
 // Set debug level to 0 until non-allocating printf is available
 const UAllocDebug_t ualloc_debug_level = UALLOC_DEBUG_NONE;//(DEBUG?UALLOC_DEBUG_MAX:UALLOC_DEBUG_NONE);
 
+// Debug characters
 const char ua_chars[] = "NFEWIL";
 
 #define ualloc_debug(ADBG_LEVEL, fmt, ...) do {                              \
@@ -38,7 +39,11 @@ const char ua_chars[] = "NFEWIL";
     }                                                                        \
 } while (0)
 
-
+/**
+ * Helper function that identifies the caller of a function
+ *
+ * @return Address of the calling function
+ */
 #if defined(__ARMCC_VERSION)
     #define caller_addr() __builtin_return_address(0)
 #elif defined(__GNUC__)
@@ -53,6 +58,10 @@ void * mbed_ualloc(size_t bytes, UAllocTraits_t traits)
     void * caller = (void*) caller_addr();
     if (UALLOC_TEST_TRAITS(traits.flags, UALLOC_TRAITS_NEVER_FREE)) {
         ptr = mbed_krbs(bytes);
+        // krbs uses the same semantics as sbrk, so translate a -1 to NULL.
+        if (ptr == (void*)-1) {
+            ptr = NULL;
+        }
         if ((ptr != NULL) && UALLOC_TEST_TRAITS(traits.flags, UALLOC_TRAITS_ZERO_FILL)) {
             memset(ptr, 0, bytes);
         }
