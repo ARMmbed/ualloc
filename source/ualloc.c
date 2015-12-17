@@ -84,7 +84,8 @@ static volatile int prevent_tracing = 0;
     #define caller_addr() (NULL)
 #endif
 
-static void * mbed_ualloc_internal(size_t bytes, UAllocTraits_t traits, void *caller) {
+static void * mbed_ualloc_internal(size_t bytes, UAllocTraits_t traits, void *caller)
+{
     void * ptr = NULL;
     if (UALLOC_TEST_TRAITS(traits.flags, UALLOC_TRAITS_NEVER_FREE)) {
         ptr = mbed_krbs(bytes);
@@ -111,7 +112,8 @@ static void * mbed_ualloc_internal(size_t bytes, UAllocTraits_t traits, void *ca
     return ptr;
 }
 
-void *mbed_ualloc(size_t bytes, UAllocTraits_t traits) {
+void *mbed_ualloc(size_t bytes, UAllocTraits_t traits)
+{
     void *caller = (void*)caller_addr();
     void *p = mbed_ualloc_internal(bytes, traits, caller);
     if (!prevent_tracing) {
@@ -122,7 +124,8 @@ void *mbed_ualloc(size_t bytes, UAllocTraits_t traits) {
     return p;
 }
 
-static void * mbed_urealloc_internal(void * ptr, size_t bytes, UAllocTraits_t traits, void *caller) {
+static void * mbed_urealloc_internal(void * ptr, size_t bytes, UAllocTraits_t traits, void *caller)
+{
     void *newptr = NULL;
     if (ptr == NULL) {
         return mbed_ualloc(bytes, traits);
@@ -146,7 +149,8 @@ static void * mbed_urealloc_internal(void * ptr, size_t bytes, UAllocTraits_t tr
     return newptr;
 }
 
-void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits) {
+void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits)
+{
     void *caller = (void*)caller_addr();
     void *p = mbed_urealloc_internal(ptr, bytes, traits, caller);
     if (!prevent_tracing) {
@@ -168,7 +172,8 @@ static void mbed_ufree_internal(void * ptr, void *caller)
     }
 }
 
-void mbed_ufree(void *ptr) {
+void mbed_ufree(void *ptr)
+{
     void *caller = (void*)caller_addr();
     mbed_ufree_internal(ptr, caller);
     if (!prevent_tracing) {
