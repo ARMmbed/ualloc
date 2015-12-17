@@ -129,7 +129,7 @@ static void * mbed_urealloc_internal(void * ptr, size_t bytes, UAllocTraits_t tr
     }
     if(traits.flags & ~UALLOC_TRAITS_BITMASK) {
         // Traits not supported in urealloc yet
-        ualloc_debug(UALLOC_DEBUG_ERROR, "ua c:%p fail\n", caller);
+        ualloc_debug(UALLOC_DEBUG_ERROR, "ur c:%p fail\n", caller);
         return NULL;
     }
     uintptr_t ptr_tmp = (uintptr_t) ptr;
@@ -137,7 +137,7 @@ static void * mbed_urealloc_internal(void * ptr, size_t bytes, UAllocTraits_t tr
             (ptr_tmp >= (uintptr_t)&__mbed_sbrk_start)) {
         newptr = dlrealloc(ptr, bytes);
     } else {
-        ualloc_debug(UALLOC_DEBUG_ERROR, "uf c:%p m:%p non-heap realloc\n", caller, ptr);
+        ualloc_debug(UALLOC_DEBUG_ERROR, "ur c:%p m:%p non-heap realloc\n", caller, ptr);
     }
 
     if(newptr == NULL) {
@@ -151,7 +151,7 @@ void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits) {
     void *p = mbed_urealloc_internal(ptr, bytes, traits, caller);
     if (!prevent_tracing) {
         prevent_tracing = 1;
-        ualloc_debug(UALLOC_DEBUG_LOG, "ua c:%p s:%u p:%p m:%p\n", caller, (unsigned)bytes, ptr, p);
+        ualloc_debug(UALLOC_DEBUG_LOG, "ur c:%p s:%u p:%p m:%p\n", caller, (unsigned)bytes, ptr, p);
         prevent_tracing = 0;
     }
     return p;
