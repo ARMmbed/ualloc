@@ -27,11 +27,43 @@ extern int printf(const char *, ...);
 
 extern void * volatile mbed_sbrk_ptr;
 
-// Set debug level to 0 until non-allocating printf is available
-const UAllocDebug_t ualloc_debug_level = UALLOC_DEBUG_NONE;//(DEBUG?UALLOC_DEBUG_MAX:UALLOC_DEBUG_NONE);
+/*****************************************************************************************
+UALLOC_DEBUG_LOG is effectively reserved for tracing memory allocations
+Tracing must be enabled via "yotta config":
+{
+    "debug": {
+        "options": {
+            "memory-trace": true
+        }
+    }
+}
+[TODO]: ualloc_debug_level probably needs better control with "yotta config"
+*****************************************************************************************/
+#ifdef YOTTA_CFG_DEBUG_OPTIONS_MEMORY_TRACE
+const UAllocDebug_t ualloc_debug_level = UALLOC_DEBUG_LOG;
+#else
+const UAllocDebug_t ualloc_debug_level = UALLOC_DEBUG_NONE;
+#endif
 
 // Debug characters
 const char ua_chars[] = "NFEWIL";
+
+/*****************************************************************************************
+The purpose of "prevent_tracing" below is twofold:
+
+1. prevent infinite loops (mbed_ualloc_internal -> ualloc_debug -> printf ->
+   mbed_ualloc_internal -> ualloc_debug -> printf...)
+2. prevent a possible scenario when an interrupt occurs while ualloc_debug
+   is printing debug information and the interrupt also calls 'mbed_ualloc' or
+   another memory operation that would result in ualloc_debug being called,
+   which would in turn result in garbled output. By using "prevent_tracing",
+   the output is kept consistent, but the memory operation invoked in the
+   interrupt handler is not logged.
+
+1 above can be prevented by using a logging function that doesn't allocate memory.
+2 above can be prevented by queueing log messages instead of logging them immediately.
+*****************************************************************************************/
+static volatile int prevent_tracing = 0;
 
 #define ualloc_debug(ADBG_LEVEL, fmt, ...) do {                              \
     if (ADBG_LEVEL <= ualloc_debug_level && ADBG_LEVEL < UALLOC_DEBUG_MAX) { \
@@ -52,10 +84,9 @@ const char ua_chars[] = "NFEWIL";
     #define caller_addr() (NULL)
 #endif
 
-void * mbed_ualloc(size_t bytes, UAllocTraits_t traits)
+static void * mbed_ualloc_internal(size_t bytes, UAllocTraits_t traits, void *caller)
 {
     void * ptr = NULL;
-    void * caller = (void*) caller_addr();
     if (UALLOC_TEST_TRAITS(traits.flags, UALLOC_TRAITS_NEVER_FREE)) {
         ptr = mbed_krbs(bytes);
         // krbs uses the same semantics as sbrk, so translate a -1 to NULL.
@@ -76,21 +107,32 @@ void * mbed_ualloc(size_t bytes, UAllocTraits_t traits)
 
     if(ptr == NULL) {
         ualloc_debug(UALLOC_DEBUG_WARNING, "ua c:%p fail\n", caller);
-    } else {
-        ualloc_debug(UALLOC_DEBUG_LOG, "ua c:%p m:%p\n", caller, ptr);
     }
+
     return ptr;
 }
-void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits)
+
+void *mbed_ualloc(size_t bytes, UAllocTraits_t traits)
 {
-    void * caller = (void*) caller_addr();
+    void *caller = (void*)caller_addr();
+    void *p = mbed_ualloc_internal(bytes, traits, caller);
+    if (!prevent_tracing) {
+        prevent_tracing = 1;
+        ualloc_debug(UALLOC_DEBUG_LOG, "ua c:%p s:%u m:%p\n", caller, (unsigned)bytes, p);
+        prevent_tracing = 0;
+    }
+    return p;
+}
+
+static void * mbed_urealloc_internal(void * ptr, size_t bytes, UAllocTraits_t traits, void *caller)
+{
     void *newptr = NULL;
     if (ptr == NULL) {
         return mbed_ualloc(bytes, traits);
     }
     if(traits.flags & ~UALLOC_TRAITS_BITMASK) {
         // Traits not supported in urealloc yet
-        ualloc_debug(UALLOC_DEBUG_WARNING, "ua c:%p fail\n", caller);
+        ualloc_debug(UALLOC_DEBUG_ERROR, "ur c:%p fail\n", caller);
         return NULL;
     }
     uintptr_t ptr_tmp = (uintptr_t) ptr;
@@ -98,25 +140,46 @@ void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits)
             (ptr_tmp >= (uintptr_t)&__mbed_sbrk_start)) {
         newptr = dlrealloc(ptr, bytes);
     } else {
-        ualloc_debug(UALLOC_DEBUG_LOG, "uf c:%p m:%p non-heap realloc\n", caller, ptr);
+        ualloc_debug(UALLOC_DEBUG_ERROR, "ur c:%p m:%p non-heap realloc\n", caller, ptr);
     }
 
     if(newptr == NULL) {
-        ualloc_debug(UALLOC_DEBUG_WARNING, "ur c:%p m0:%p fail\n", caller, ptr);
-    } else {
-        ualloc_debug(UALLOC_DEBUG_LOG, "ur c:%p m0:%p m1:%p\n", caller, ptr, newptr);
+        ualloc_debug(UALLOC_DEBUG_WARNING, "ur c:%p p:%p fail\n", caller, ptr);
     }
     return newptr;
 }
-void mbed_ufree(void * ptr)
+
+void * mbed_urealloc(void * ptr, size_t bytes, UAllocTraits_t traits)
 {
-    void * caller = (void*) caller_addr();
-    ualloc_debug(UALLOC_DEBUG_LOG, "uf c:%p m:%p\n", caller, ptr);
+    void *caller = (void*)caller_addr();
+    void *p = mbed_urealloc_internal(ptr, bytes, traits, caller);
+    if (!prevent_tracing) {
+        prevent_tracing = 1;
+        ualloc_debug(UALLOC_DEBUG_LOG, "ur c:%p s:%u p:%p m:%p\n", caller, (unsigned)bytes, ptr, p);
+        prevent_tracing = 0;
+    }
+    return p;
+}
+
+static void mbed_ufree_internal(void * ptr, void *caller)
+{
     uintptr_t ptr_tmp = (uintptr_t) ptr;
     if ((ptr_tmp < (uintptr_t) mbed_sbrk_ptr) &&
             (ptr_tmp >= (uintptr_t)&__mbed_sbrk_start)) {
         dlfree(ptr);
     } else {
-        ualloc_debug(UALLOC_DEBUG_LOG, "uf c:%p m:%p non-heap free\n", caller, ptr);
+        ualloc_debug(UALLOC_DEBUG_WARNING, "uf c:%p m:%p non-heap free\n", caller, ptr);
     }
 }
+
+void mbed_ufree(void *ptr)
+{
+    void *caller = (void*)caller_addr();
+    mbed_ufree_internal(ptr, caller);
+    if (!prevent_tracing) {
+        prevent_tracing = 1;
+        ualloc_debug(UALLOC_DEBUG_LOG, "uf c:%p m:%p\n", caller, ptr);
+        prevent_tracing = 0;
+    }
+}
+
