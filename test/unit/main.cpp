@@ -16,10 +16,15 @@
  */
 #include <stddef.h>
 #include <stdint.h>
-#include "mbed-drivers/test_env.h"
+#include <stdlib.h>
+#include <string.h>
+#include "greentea-client/test_env.h"
+#include "unity/unity.h"
+#include "utest/utest.h"
 #include "core-util/sbrk.h"
 #include "ualloc/ualloc.h"
 
+using namespace utest::v1;
 
 extern void * volatile mbed_sbrk_ptr;
 extern void * volatile mbed_krbs_ptr;
@@ -27,11 +32,7 @@ extern volatile uintptr_t mbed_sbrk_diff;
 
 #define TEST_SIZE_0 0x20
 
-void app_start(int, char**) {
-    MBED_HOSTTEST_TIMEOUT(10);
-    MBED_HOSTTEST_SELECT(default);
-    MBED_HOSTTEST_DESCRIPTION(ualloc zone test);
-    MBED_HOSTTEST_START("UALLOC_ZONE");
+void test_ualloc_zone() {
     const char * current_test = "none";
     UAllocTraits_t traits;
 
@@ -218,5 +219,24 @@ void app_start(int, char**) {
         printf("First failing test: %s\r\n", current_test);
     }
 
-    MBED_HOSTTEST_RESULT(tests_pass);
+    TEST_ASSERT_TRUE(tests_pass);
+}
+
+status_t greentea_setup(const size_t number_of_cases)
+{
+    GREENTEA_SETUP(10, "default_auto");
+
+    return greentea_test_setup_handler(number_of_cases);
+}
+
+/* Tests for malloc provided by ualloc module */
+Case cases[] =
+{
+    Case("Ualloc test", test_ualloc_zone),
+};
+
+Specification specification(greentea_setup, cases, greentea_test_teardown_handler);
+
+void app_start(int, char**) {
+    Harness::run(specification);
 }
