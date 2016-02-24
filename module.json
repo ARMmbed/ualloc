@@ -21,11 +21,13 @@
       "type": "Apache-2.0"
     }
   ],
-  "testDependencies": {
+  "dependencies": {
     "dlmalloc": "^1.0.0",
-    "core-util": "^1.0.0",
+    "core-util": "^1.0.0"
+  },
+  "testDependencies": {
     "unity": "^2.0.0",
-    "greentea-client": "^0.1.4"
+    "greentea-client": "~0.1.4"
   },
   "scripts": {
     "testReporter": [
