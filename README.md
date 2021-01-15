@@ -1,3 +1,7 @@
+## Deprecation note!
+
+**Please note: this repository is deprecated and is no longer actively maintained**.
+
 # ualloc
 ualloc implements a traits-based allocator, described below.
 
